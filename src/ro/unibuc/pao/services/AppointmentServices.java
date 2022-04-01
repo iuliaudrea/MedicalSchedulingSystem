@@ -133,7 +133,7 @@ public class AppointmentServices {
         return appointmentRepository.get(index).getMedic().getCabinet();
     }
 
-    // verificarea faptului ca o programare nu se suprapune cu programarile deja existente
+    // verificarea faptului ca o programare nu se suprapune cu programarile deja existente la acelasi medic
     private boolean isOverlapping(Appointment appointment) {
         if(appointment == null) return true; // de tratat exceptii
 
@@ -145,14 +145,16 @@ public class AppointmentServices {
 
         for(int i = 0; i < appointmentRepository.getSize(); i++) {
             Appointment ap = appointmentRepository.get(i);
-
-            // data si ora la care incepe, respectiv se termina programarea cu care comparam
-            DateTime begin = new DateTime(ap.getDateTime());
-            DateTime end = new DateTime(getEndDate(ap));
-            // verificarea faptului ca cele doua intervale nu se suprapun
-            // daca appStart este dupa end sau daca appFin este inaintea lui begin, atunci datele nu se suprapun
-            if(appStart.compareTo(end) == 1 || appFin.compareTo(begin) == -1); // cazul ok
-            else return true;
+            // daca medicul este acelasi
+            if(ap.getMedic().equals(appointment.getMedic())) {
+                // data si ora la care incepe, respectiv se termina programarea cu care comparam
+                DateTime begin = new DateTime(ap.getDateTime());
+                DateTime end = new DateTime(getEndDate(ap));
+                // verificarea faptului ca cele doua intervale nu se suprapun
+                // daca appStart este dupa end sau daca appFin este inaintea lui begin, atunci datele nu se suprapun
+                if(appStart.compareTo(end) == 1 || appFin.compareTo(begin) == -1); // cazul ok
+                else return true;
+            }
         }
         return false;
     }

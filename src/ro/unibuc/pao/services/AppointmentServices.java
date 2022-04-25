@@ -4,7 +4,6 @@ import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.persistence.*;
 
 import java.util.Vector;
-
 public class AppointmentServices {
 
     private AppointmentRepository appointmentRepository = new AppointmentRepository();
@@ -50,27 +49,36 @@ public class AppointmentServices {
         return true;
     }
 
-    // se returneaza si se afiseaza programarile unui anumit client
-    public Vector<Appointment> getAppointmentsByClient(int index) {
+    // se returneaza programarile unui anumit client
+    private Vector<Appointment> getAppointmentsByClient(int index) {
         Vector<Appointment> result = new Vector<Appointment>();
         for(int i = 0; i < appointmentRepository.getSize(); i++)
             if(appointmentRepository.get(i).getClient().equals(clientRepo.get(index))) {
                 result.add(appointmentRepository.get(i));
-                System.out.println(appointmentRepository.get(i));
             }
-
         return result;
     }
 
-    //se returneaza si se afiseaza programarile unui anumit medic
-    public Vector<Appointment> getAppointmentsByMedic(int index) {
+    //se returneaza programarile unui anumit medic
+    private Vector<Appointment> getAppointmentsByMedic(Medic medic){
         Vector<Appointment> result = new Vector<Appointment>();
         for(int i = 0; i < appointmentRepository.getSize(); i++)
-            if(appointmentRepository.get(i).getMedic().equals(medicRepo.get(index))) {
+            if(appointmentRepository.get(i).getMedic().equals(medic)) {
                 result.add(appointmentRepository.get(i));
-                System.out.println(appointmentRepository.get(i));
             }
         return result;
+    }
+
+    public void printAppointmentsByMedic(int index){
+        Vector<Appointment> result = getAppointmentsByMedic(medicRepo.get(index));
+        for(int i = 0; i < result.size(); i++)
+            System.out.println(result.get(i));
+    }
+
+    public void printAppointmentsByClient(int index){
+        Vector<Appointment> result = getAppointmentsByClient(index);
+        for(int i = 0; i < result.size(); i++)
+            System.out.println(result.get(i));
     }
 
 //    //returneaza programarile unui medic primit ca parametru la o anumita data
@@ -96,8 +104,18 @@ public class AppointmentServices {
         if(index <0 || index >= appointmentRepository.getSize())
             return false;
 
-        Appointment appointment = appointmentRepository.get(index);
-        appointment.setDateTime(newDate);
+        Appointment oldApp = new Appointment(appointmentRepository.get(index));
+        Appointment newApp = new Appointment(oldApp);
+        newApp.setDateTime(newDate);
+        appointmentRepository.delete(index);
+
+        if(isOverlapping(newApp)) {
+            // daca data se suprapune cu alta programare, programarea ramane la fel
+            appointmentRepository.add(oldApp);
+            return false;
+        }
+
+        appointmentRepository.add(newApp);
         return true;
     }
 
@@ -105,8 +123,21 @@ public class AppointmentServices {
         if(appIndex <0 || appIndex >= appointmentRepository.getSize())
             return false;
 
-        Appointment appointment = appointmentRepository.get(appIndex);
-        appointment.setService(serviceRepo.get(serviceIndex));
+        Appointment oldApp = new Appointment(appointmentRepository.get(appIndex));
+        Appointment newApp = new Appointment(oldApp);
+        newApp.setService(serviceRepo.get(serviceIndex));
+        appointmentRepository.delete(appIndex);
+
+        if(isOverlapping(newApp) || !newApp.getService().getSpeciality().equals(newApp.getMedic().getSpeciality())){
+            // daca se schimba serviciul, durata poate fi diferita de durata serviciului precedent
+            // deci este nevoie sa verificam ca noua programare nu se suprapune cu alte programari
+            // si ca noul serviciu face parte din acceasi specializare ca cea a medicului
+//            System.out.println("Specializarea serviciului e diferita");
+            appointmentRepository.add(oldApp);
+            return false;
+        }
+
+        appointmentRepository.add(newApp);
         return true;
     }
 
@@ -114,8 +145,18 @@ public class AppointmentServices {
         if(appIndex <0 || appIndex >= appointmentRepository.getSize())
             return false;
 
-        Appointment appointment = appointmentRepository.get(appIndex);
-        appointment.setMedic(medicRepo.get(medicIndex));
+        Appointment oldApp = new Appointment(appointmentRepository.get(appIndex));
+        Appointment newApp = new Appointment(oldApp);
+        newApp.setMedic(medicRepo.get(medicIndex));
+        appointmentRepository.delete(appIndex);
+
+        if(isOverlapping(newApp) || !newApp.getMedic().getSpeciality().equals(newApp.getService().getSpeciality())) {
+//            System.out.println("Specializarea medicului e diferita");
+            appointmentRepository.add(oldApp);
+            return false;
+        }
+
+        appointmentRepository.add(newApp);
         return true;
     }
 
@@ -139,22 +180,22 @@ public class AppointmentServices {
 
         // inceputul si sfarsitul programarii pe care vrem sa o adaugam
         DateTime appStart, appFin;
-        appStart = appointment.getDateTime();
-        appFin = getEndDate(appointment);
+        appStart = new DateTime(appointment.getDateTime());
+        appFin = new DateTime(getEndDate(appointment));
         //TODO appStart si appFin pot sa fie null
 
-        for(int i = 0; i < appointmentRepository.getSize(); i++) {
-            Appointment ap = appointmentRepository.get(i);
-            // daca medicul este acelasi
-            if(ap.getMedic().equals(appointment.getMedic())) {
-                // data si ora la care incepe, respectiv se termina programarea cu care comparam
-                DateTime begin = new DateTime(ap.getDateTime());
-                DateTime end = new DateTime(getEndDate(ap));
-                // verificarea faptului ca cele doua intervale nu se suprapun
-                // daca appStart este dupa end sau daca appFin este inaintea lui begin, atunci datele nu se suprapun
-                if(appStart.compareTo(end) == 1 || appFin.compareTo(begin) == -1); // cazul ok
-                else return true;
-            }
+        Vector<Appointment> appts = getAppointmentsByMedic(appointment.getMedic()); // programarile deja existente la acelasi medic
+
+        for(int i = 0; i < appts.size(); i++) {
+            Appointment ap = appts.get(i);
+
+            // data si ora la care incepe, respectiv se termina programarea cu care comparam
+            DateTime begin = new DateTime(ap.getDateTime());
+            DateTime end = new DateTime(getEndDate(ap));
+
+            // daca appStart este dupa end sau daca appFin este inaintea lui begin, atunci intervalele nu se suprapun
+            if(appStart.compareTo(end) == 1 || appFin.compareTo(begin) == -1); // cazul ok
+            else return true;
         }
         return false;
     }
@@ -178,6 +219,10 @@ public class AppointmentServices {
         // (startDate.getMinutes() + duration) % 60) reprezinta minutul la care se termina programarea
 
         return endDate;
+    }
+
+    public DateTime getAppointmentFinDate(int index) {
+        return new DateTime(getEndDate(appointmentRepository.get(index)));
     }
 
 }

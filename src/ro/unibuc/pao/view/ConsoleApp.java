@@ -42,7 +42,7 @@ public class ConsoleApp {
 
     private int readOption(){
         int option = readInt();
-        if (option >= 1 && option <= 11)
+        if (option >= 1 )//&& option <= 11)
             return option;
 
         System.out.println("Invalid option. Try again");
@@ -89,6 +89,12 @@ public class ConsoleApp {
                 s.nextLine();
                 appService.deleteAppointment(index);
                 break;
+            case 12:
+                System.out.print("Appointment index:");
+                int ind = s.nextInt();
+                s.nextLine();
+                System.out.println(appService.getAppointmentFinDate(ind));
+                break;
             case 11:
                 System.exit(0);
         }
@@ -106,13 +112,13 @@ public class ConsoleApp {
                 System.out.print("Please enter client index:");
                 int index = s.nextInt();
                 s.nextLine();
-                appService.getAppointmentsByClient(index);
+                appService.printAppointmentsByClient(index);
                 break;
             case 2:
                 System.out.print("Please enter medic index:");
                 int index2 = s.nextInt();
                 s.nextLine();
-                appService.getAppointmentsByMedic(index2);
+                appService.printAppointmentsByMedic(index2);
                 break;
 //            case 3:
 //                System.out.print("Please enter medic index:");
@@ -298,13 +304,18 @@ public class ConsoleApp {
                 "0722678908", "pmihai@mail.com", Speciality.GENERAL, room1);
         Medic medic2 = new Medic("Matei", "Popa", dateTime2,
                 "0744555666", "medic2@mail.com", Speciality.ORTHODONTICS, room2);
+        Medic medic3 = new Medic("Gigel", "Costel", dateTime2,
+                "0711122333", "gigel@gmail.com", Speciality.GENERAL, room2);
         app.medicService.addNewMedic(medic1);
         app.medicService.addNewMedic(medic2);
+        app.medicService.addNewMedic(medic3);
 
         Service service1 = new Service("Consultatie", 100, 10, Speciality.GENERAL);
-        Service service2 = new Service("Montare Aparat", 200, 30, Speciality.ORTHODONTICS);
+        Service service2 = new Service("Montare Aparat Dentar", 200, 30, Speciality.ORTHODONTICS);
+        Service service3 = new Service("Obturatie", 150, 30, Speciality.GENERAL);
         app.serviceService.addNewService(service1);
         app.serviceService.addNewService(service2);
+        app.serviceService.addNewService(service3);
 
         Appointment appointment = new Appointment(client1, medic1, service1, dateTime);
         Appointment appointment2 = new Appointment(client1, medic2, service2, dateTime2);

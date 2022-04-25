@@ -24,10 +24,9 @@ public class DateTime extends Date{
 
     @Override
     public String toString() {
-        return " DateTime{" + super.toString() +
-                "hour=" + hour +
-                ", minutes=" + minutes +
-                '}';
+        if(minutes < 10)
+            return super.toString() + ", time=" + hour + ":0" + minutes;
+        return super.toString() + ", time=" + hour + ":" + minutes;
     }
 
     @Override

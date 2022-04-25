@@ -31,11 +31,11 @@ public class Person {
 
     @Override
     public String toString() {
-        return "firstName='" + firstName + '\'' +
-                ", lastName='" + lastName + '\'' +
+        return "firstName=" + firstName +
+                ", lastName=" + lastName +
                 ", birthDate=" + birthDate +
-                ", phoneNumber='" + phoneNumber + '\'' +
-                ", email='" + email;
+                ", phoneNumber=" + phoneNumber +
+                ", email=" + email;
     }
 
     @Override

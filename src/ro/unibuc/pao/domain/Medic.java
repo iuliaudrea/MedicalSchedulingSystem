@@ -40,8 +40,8 @@ public class Medic extends Person {
     @Override
     public String toString() {
         return "Medic{" + super.toString() +
-                "speciality=" + speciality +
-                ", cabinet=" + cabinet +
+                ", speciality=" + speciality +
+                ", cabinet=Room#" + cabinet.getNumber() +
                 '}';
     }
 

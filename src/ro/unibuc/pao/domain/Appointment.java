@@ -28,10 +28,10 @@ public class Appointment {
     @Override
     public String toString() {
         return "Appointment{" +
-                "client=" + client +
-                ", medic=" + medic +
-                ", service=" + service +
-                ", dateTime=" + dateTime +
+                "client=" + client.getLastName() + " " + client.getFirstName() +
+                ", medic=" + medic.getLastName() + " " + medic.getFirstName() +
+                ", service=" + service.getName() +
+                ", date=" + dateTime +
                 '}';
     }
 

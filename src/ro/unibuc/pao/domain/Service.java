@@ -26,10 +26,10 @@ public class Service {
     @Override
     public String toString() {
         return "Service{" +
-                "name='" + name + '\'' +
+                "name=" + name +
                 ", price=" + price +
                 ", duration=" + duration +
-                ", specialiaty=" + speciality +
+                ", speciality=" + speciality +
                 '}';
     }
 

@@ -1,13 +1,16 @@
 package ro.unibuc.pao.domain;
 
 import java.util.Objects;
+import ro.unibuc.pao.exceptions.InvalidDataException;
 
 public class DateTime extends Date{
     private int hour;
     private int minutes;
 
-    public DateTime(int day, int month, int year, int hour, int minutes) {
+    public DateTime(int day, int month, int year, int hour, int minutes) throws InvalidDataException {
         super(day, month, year);
+        if(hour < 0 || hour > 23 || minutes < 0 || minutes > 59)
+            throw new InvalidDataException("Invalid time!");
         this.hour = hour;
         this.minutes = minutes;
     }

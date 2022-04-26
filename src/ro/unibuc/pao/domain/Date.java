@@ -1,16 +1,39 @@
 package ro.unibuc.pao.domain;
 
+import java.util.HashMap;
 import java.util.Objects;
+import ro.unibuc.pao.exceptions.InvalidDataException;
 
 public class Date {
     protected int day;
     protected int month;
     protected int year;
 
-    public Date(int day, int month, int year) {
-        this.day = day;
-        this.month = month;
-        this.year = year;
+    public Date(int day, int month, int year) throws InvalidDataException {
+        HashMap<Integer, Integer> daysInMonth = new HashMap<>(){
+            {   put(1, 31);
+                put(2, 28);
+                put(3, 31);
+                put(4, 30);
+                put(5, 31);
+                put(6, 30);
+                put(7, 31);
+                put(8, 31);
+                put(9, 30);
+                put(10, 31);
+                put(11, 30);
+                put(12, 31);
+            }
+        };
+
+        if(daysInMonth.containsKey(month) && daysInMonth.get(month) >= day && day > 0
+            && year > 999 && year < 10000) {
+            this.day = day;
+            this.month = month;
+            this.year = year;
+        } else {
+            throw new InvalidDataException("Invalid date!");
+        }
     }
 
     public Date(Date date) {

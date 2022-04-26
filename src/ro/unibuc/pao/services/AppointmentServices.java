@@ -1,9 +1,11 @@
 package ro.unibuc.pao.services;
 
+import com.sun.jdi.InvalidLineNumberException;
 import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.persistence.*;
-
+import ro.unibuc.pao.exceptions.InvalidDataException;
 import java.util.Vector;
+
 public class AppointmentServices {
 
     private AppointmentRepository appointmentRepository = new AppointmentRepository();
@@ -12,12 +14,43 @@ public class AppointmentServices {
     private MedicRepository medicRepo = new MedicRepository();
 
 
-    public boolean addAppointment(Appointment appointment) {
-        // se returneaza true daca programarea poate fi adaugata cu succes
-        if(isOverlapping(appointment) || appointment == null)
-            return false; // nu se poate adauga programarea
+    public void addAppointment(Appointment appointment) throws InvalidDataException{
+        if(appointment == null)
+            throw new InvalidDataException("Appointment is null");
+        if(isOverlapping(appointment))
+            throw new InvalidDataException("Appointment is overlapping with other appointments!");
+
         appointmentRepository.add(appointment);
-        return true;
+    }
+
+    public void addAppointment(int clientIndex, int medicIndex, int serviceIndex, DateTime date) throws InvalidDataException {
+        //daca clientul/medicul/serivciul nu exista in repository-uri, nu se poate crea programarea
+        if(clientIndex <0 || clientIndex >= clientRepo.getSize())
+            throw new InvalidDataException("Client index is invalid!");
+        if(medicIndex < 0 ||  medicIndex >= medicRepo.getSize())
+            throw new InvalidDataException("Medic index is invalid!");
+        if(serviceIndex < 0 || serviceIndex >= serviceRepo.getSize())
+            throw new InvalidDataException("Service index is invalid!");
+
+        Client client = clientRepo.get(clientIndex);
+        Medic medic = medicRepo.get(medicIndex);
+        Service service = serviceRepo.get(serviceIndex);
+
+        //daca programarea se intersecteaza cu alta programare
+        Appointment temp = new Appointment(client,medic, service, date); // obiect temporar de tipul Appointment
+        if(isOverlapping(temp))
+            throw new InvalidDataException("Appointment is overlapping with other appointments!");
+
+        // daca medicul nu are aceeasi specializare ca serviciul pentru care se face programarea
+        if(medic.getSpeciality() != service.getSpeciality())
+            throw new InvalidDataException("Medic does not have the same speciality as the service!");
+
+        // daca ora de inceput a programarii incepe inainte de ora 9:00 sau se termina dupa ora 18:00
+        if(date.getHour() < 9 || getEndDate(temp).getHour() > 18)
+            throw new InvalidDataException("Appointment is not in the working hours!");
+
+        Appointment appointment = new Appointment(client,medic,service,date);
+        appointmentRepository.add(appointment);
     }
 
     public void printAllAppointments() {
@@ -25,32 +58,11 @@ public class AppointmentServices {
             System.out.println(appointmentRepository.get(i));
     }
 
-    public boolean addAppointment(int clientIndex, int medicIndex, int serviceIndex, DateTime date) {
-        //daca clientul/medicul/serivciul nu exista in repository-uri, nu se poate crea programarea
-        if(clientIndex <0 || medicIndex < 0 || serviceIndex < 0 || clientIndex >= clientRepo.getSize()
-            || medicIndex >= medicRepo.getSize() || serviceIndex >= serviceRepo.getSize())
-            return false;
-
-        Client client = clientRepo.get(clientIndex);
-        Medic medic = medicRepo.get(medicIndex);
-        Service service = serviceRepo.get(serviceIndex);
-
-        //daca programarea se intersecteaza cu alta programare se returneaza false
-        Appointment temp = new Appointment(client,medic, service, date); // obiect temporar de tipul Appointment
-        if(isOverlapping(temp)) return false;
-
-        // daca medicul nu are aceeasi specializare ca serviciul pentru care se face programarea, se returneaza false
-        if(medic.getSpeciality() != service.getSpeciality())
-            return false;
-
-        // altfel se adauga programarea
-        Appointment appointment = new Appointment(client,medic,service,date);
-        appointmentRepository.add(appointment);
-        return true;
-    }
-
     // se returneaza programarile unui anumit client
-    private Vector<Appointment> getAppointmentsByClient(int index) {
+    public Vector<Appointment> getAppointmentsByClient(int index) throws InvalidDataException {
+        if(index < 0 || index >= clientRepo.getSize())
+            throw new InvalidDataException("Client index is invalid!");
+
         Vector<Appointment> result = new Vector<Appointment>();
         for(int i = 0; i < appointmentRepository.getSize(); i++)
             if(appointmentRepository.get(i).getClient().equals(clientRepo.get(index))) {
@@ -60,6 +72,18 @@ public class AppointmentServices {
     }
 
     //se returneaza programarile unui anumit medic
+    public Vector<Appointment> getAppointmentsByMedic(int index) throws InvalidDataException {
+        if(index < 0 || index >= medicRepo.getSize())
+            throw new InvalidDataException("Medic index is invalid!");
+
+        Vector<Appointment> result = new Vector<Appointment>();
+        for(int i = 0; i < appointmentRepository.getSize(); i++)
+            if(appointmentRepository.get(i).getMedic().equals(medicRepo.get(index))) {
+                result.add(appointmentRepository.get(i));
+            }
+        return result;
+    }
+
     private Vector<Appointment> getAppointmentsByMedic(Medic medic){
         Vector<Appointment> result = new Vector<Appointment>();
         for(int i = 0; i < appointmentRepository.getSize(); i++)
@@ -69,40 +93,11 @@ public class AppointmentServices {
         return result;
     }
 
-    public void printAppointmentsByMedic(int index){
-        Vector<Appointment> result = getAppointmentsByMedic(medicRepo.get(index));
-        for(int i = 0; i < result.size(); i++)
-            System.out.println(result.get(i));
-    }
-
-    public void printAppointmentsByClient(int index){
-        Vector<Appointment> result = getAppointmentsByClient(index);
-        for(int i = 0; i < result.size(); i++)
-            System.out.println(result.get(i));
-    }
-
-//    //returneaza programarile unui medic primit ca parametru la o anumita data
-//    public Vector<Appointment> getAppointmentsByMedicAndDate(int index, Date date) {
-//        Vector<Appointment> result = new Vector<Appointment>();
-//        for(int i = 0; i < appointmentRepository.getSize(); i++) {
-//            Date appDate = new Date(appointmentRepository.get(i).getDateTime().getYear(),
-//                                    appointmentRepository.get(i).getDateTime().getMonth(),
-//                                    appointmentRepository.get(i).getDateTime().getDay());
-//
-//            if (appointmentRepository.get(i).getMedic().equals(medicRepo.get(index)) &&
-//                    appDate.equals(date)) {
-//                result.add(appointmentRepository.get(i));
-//                System.out.println(appointmentRepository.get(i));
-//            }
-//        }
-//        return result;
-//    }
-
     // metode pentru modificarea programarilor
     // se returneaza true daca programarea poate fi schimbata cu succes
-    public boolean updateDate(int index, DateTime newDate) {
+    public void updateDate(int index, DateTime newDate) throws InvalidDataException {
         if(index <0 || index >= appointmentRepository.getSize())
-            return false;
+            throw new InvalidDataException("Appointment index is invalid!");
 
         Appointment oldApp = new Appointment(appointmentRepository.get(index));
         Appointment newApp = new Appointment(oldApp);
@@ -112,11 +107,16 @@ public class AppointmentServices {
         if(isOverlapping(newApp)) {
             // daca data se suprapune cu alta programare, programarea ramane la fel
             appointmentRepository.add(oldApp);
-            return false;
+            throw new InvalidDataException("The new date is overlapping with another appointment!");
+        }
+
+        // daca data se schimba inainte de ora 9:00 sau dupa ora 18:00, programarea ramane la fel
+        if(newDate.getHour() < 9 || getEndDate(newApp).getHour() > 18) {
+            appointmentRepository.add(oldApp);
+            throw new InvalidDataException("The new date is invalid!");
         }
 
         appointmentRepository.add(newApp);
-        return true;
     }
 
     public boolean updateService(int appIndex, int serviceIndex) {
@@ -132,7 +132,6 @@ public class AppointmentServices {
             // daca se schimba serviciul, durata poate fi diferita de durata serviciului precedent
             // deci este nevoie sa verificam ca noua programare nu se suprapune cu alte programari
             // si ca noul serviciu face parte din acceasi specializare ca cea a medicului
-//            System.out.println("Specializarea serviciului e diferita");
             appointmentRepository.add(oldApp);
             return false;
         }

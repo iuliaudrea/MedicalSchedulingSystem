@@ -15,13 +15,14 @@ public class Service {
         this.speciality = speciality;
     }
 
-//    public Service(Service service) {
-//        if(service != null) {
-//            this.name = service.name;
-//            this.price = service.price;
-//            this.duration = service.duration;
-//        }
-//    }
+    public Service(Service service) {
+        if(service != null) {
+            this.name = service.name;
+            this.price = service.price;
+            this.duration = service.duration;
+            this.speciality = service.speciality;
+        }
+    }
 
     @Override
     public String toString() {

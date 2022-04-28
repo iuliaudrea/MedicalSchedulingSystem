@@ -3,9 +3,10 @@ package ro.unibuc.pao.view;
 import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.services.*;
+import ro.unibuc.pao.services.csv.AuditServices;
 
-import java.sql.SQLOutput;
-import java.util.InputMismatchException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -18,12 +19,35 @@ public class ConsoleApp {
 
     public static void main(String args[]) {
         ConsoleApp app = new ConsoleApp();
-        addSampleData();
+        app.loadCSVFiles();
+//        app.printAllServices();
+//        System.out.println("---------------------");
+//        app.printAllClients();
+//        System.out.println("---------------------");
+//        app.printAllMedics();
+//        System.out.println("---------------------");
+//        app.listAppointments();
+
         while (true) {
             app.showMenu();
             int option = app.readOption();
             app.execute(option);
         }
+
+    }
+
+    private void audit(String action){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        AuditServices auditServices = new AuditServices();
+        auditServices.write(action, dtf.format(now));
+    }
+
+    private void loadCSVFiles() {
+        serviceService.loadFromCSVFile();
+        clientService.loadFromCSVFile();
+        medicService.loadFromCSVFile();
+        appService.loadFromCSVFile();
     }
 
     private void showMenu() {
@@ -69,36 +93,46 @@ public class ConsoleApp {
         switch (option) {
             case 1:
                 readClient();
+                audit("Added new client");
                 break;
             case 2:
                 readMedic();
+                audit("Added new medic");
                 break;
             case 3:
                 readService();
+                audit("Added new service");
                 break;
             case 4:
                 readAppointment();
+                audit("Added new appointment");
                 break;
             case 5:
                 listAppointments();
+                audit("Printed all appointments");
                 break;
             case 6:
                 printAllClients();
+                audit("Printed all clients");
                 break;
             case 7:
                 printAllMedics();
+                audit("Printed all medics");
                 break;
             case 8:
                 printAllServices();
+                audit("Printed all services");
                 break;
             case 9:
                 updateAppointment();
+                audit("Updated appointment");
                 break;
             case 10:
                 System.out.print("Enter the index of the appointment to delete:");
                 int index = s.nextInt();
                 s.nextLine();
                 appService.deleteAppointment(index);
+                audit("Deleted appointment");
                 break;
             case 12:
                 System.out.print("Appointment index:");
@@ -115,6 +149,7 @@ public class ConsoleApp {
         System.out.print("Filter appointments by 0-none, 1-client, 2-medic:");
         int option = s.nextInt();
         s.nextLine();
+        // TODO: daca nu sunt programari se afiseaza un mesaj
         switch(option) {
             case 0:
                 appService.printAllAppointments();

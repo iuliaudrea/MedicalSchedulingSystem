@@ -2,8 +2,10 @@ package ro.unibuc.pao.services;
 
 import ro.unibuc.pao.domain.Client;
 import ro.unibuc.pao.domain.Date;
+import ro.unibuc.pao.domain.Service;
 import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.persistence.ClientRepository;
+import ro.unibuc.pao.services.csv.ClientCSVServices;
 
 import java.util.Vector;
 
@@ -49,6 +51,14 @@ public class ClientServices {
         if(index < 0 || index >= clientRepository.getSize())
             throw new InvalidDataException("Index is out of bounds");
         clientRepository.delete(index);
+    }
+
+    public void loadFromCSVFile(){
+        ClientCSVServices csvFileService = ClientCSVServices.getInstance();
+        Vector<Client> clients = new Vector<>(csvFileService.read());
+        for(Client client : clients) {
+            clientRepository.add(client);
+        }
     }
 
 }

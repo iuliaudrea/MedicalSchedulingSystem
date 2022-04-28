@@ -4,7 +4,7 @@ import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.persistence.MedicRepository;
 import ro.unibuc.pao.persistence.RoomRepository;
-
+import ro.unibuc.pao.services.csv.MedicCSVServices;
 import java.util.Vector;
 
 public class MedicServices {
@@ -74,4 +74,11 @@ public class MedicServices {
         roomRepository.add(room);
     }
 
+    public void loadFromCSVFile(){
+        MedicCSVServices csvFileService = MedicCSVServices.getInstance();
+        Vector<Medic> medics = new Vector<>(csvFileService.read());
+        for(Medic medic : medics) {
+            medicRepository.add(medic);
+        }
+    }
 }

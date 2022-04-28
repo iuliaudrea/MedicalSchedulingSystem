@@ -4,6 +4,7 @@ import ro.unibuc.pao.domain.Service;
 import ro.unibuc.pao.domain.Speciality;
 import ro.unibuc.pao.persistence.ServiceRepository;
 import ro.unibuc.pao.exceptions.InvalidDataException;
+import ro.unibuc.pao.services.csv.ServiceCSVServices;
 import java.util.Vector;
 
 public class ServiceServices {
@@ -40,5 +41,13 @@ public class ServiceServices {
 
     public void addNewService(Service service) {
         serviceRepository.add(service);
+    }
+
+    public void loadFromCSVFile(){
+        ServiceCSVServices csvFileService = ServiceCSVServices.getInstance();
+        Vector<Service> services = new Vector<>(csvFileService.read());
+        for(Service service : services) {
+            serviceRepository.add(service);
+        }
     }
 }

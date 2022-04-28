@@ -4,6 +4,8 @@ import com.sun.jdi.InvalidLineNumberException;
 import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.persistence.*;
 import ro.unibuc.pao.exceptions.InvalidDataException;
+import ro.unibuc.pao.services.csv.AppointmentCSVServices;
+
 import java.util.Vector;
 
 public class AppointmentServices {
@@ -222,6 +224,14 @@ public class AppointmentServices {
 
     public DateTime getAppointmentFinDate(int index) {
         return new DateTime(getEndDate(appointmentRepository.get(index)));
+    }
+
+    public void loadFromCSVFile(){
+        AppointmentCSVServices csvFileService = AppointmentCSVServices.getInstance();
+        Vector<Appointment> appts = new Vector<>(csvFileService.read());
+        for(Appointment app : appts) {
+            appointmentRepository.add(app);
+        }
     }
 
 }

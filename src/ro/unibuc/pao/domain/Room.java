@@ -13,6 +13,9 @@ public class Room {
         this.surface = surface;
     }
 
+    public Room() {
+    }
+
     public Room(Room room) {
         if(room != null) {
             this.number = room.number;

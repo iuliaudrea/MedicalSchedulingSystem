@@ -5,6 +5,10 @@ import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.persistence.MedicRepository;
 import ro.unibuc.pao.persistence.RoomRepository;
 import ro.unibuc.pao.services.csv.MedicCSVServices;
+import ro.unibuc.pao.services.database.ConnectionManager;
+import ro.unibuc.pao.services.database.MedicDBServices;
+
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class MedicServices {
@@ -19,24 +23,8 @@ public class MedicServices {
         return medics;
     }
 
-    public Vector<Medic> getMedicsWithSpeciality(Speciality speciality) {
-        Vector<Medic> medics = new Vector<>();
-        for(int i = 0; i < medicRepository.getSize(); i++)
-            if(medicRepository.get(i).getSpeciality().equals(speciality))
-                medics.add(medicRepository.get(i));
-        return medics;
-    }
-
-    public void addNewMedic(Medic medic) throws InvalidDataException {
-        if(medic == null)
-            throw new InvalidDataException("Medicul nu poate fi null!");
-
-        Medic newMedic = new Medic(medic);
-        medicRepository.add(newMedic);
-    }
-
-    public void addNewMedic(String firstName, String lastName, Date birthDate, String phoneNumber,
-                String email, String spec, int roomIndex) throws InvalidDataException {
+    private boolean isValidMedic(String firstName, String lastName, Date birthDate, String phoneNumber,
+          String email, String spec) throws InvalidDataException {
 
         if(firstName == null || lastName == null || firstName.equals("") || lastName.equals(""))
             throw new InvalidDataException("Invalid name!");
@@ -54,13 +42,29 @@ public class MedicServices {
         if(!ok) {
             throw new InvalidDataException("Invalid speciality!");
         }
-        Speciality speciality = Speciality.valueOf(spec);
 
-        if(roomIndex < 0 || roomIndex >= roomRepository.getSize())
-            throw new InvalidDataException("Invalid room index!");
+        return true;
+    }
 
-        Medic newMedic = new Medic(firstName, lastName, birthDate, phoneNumber, email, speciality, roomRepository.get(roomIndex));
+    public void addNewMedic(Medic medic) throws InvalidDataException {
+        if(medic == null)
+            throw new InvalidDataException("Medicul nu poate fi null!");
+
+        Medic newMedic = new Medic(medic);
         medicRepository.add(newMedic);
+    }
+
+    public void addNewMedic(String firstName, String lastName, Date birthDate, String phoneNumber,
+                String email, String spec, int roomIndex) throws InvalidDataException {
+
+        if(isValidMedic(firstName, lastName, birthDate, phoneNumber, email, spec)) {
+            Speciality speciality = Speciality.valueOf(spec);
+            if (roomIndex < 0 || roomIndex >= roomRepository.getSize())
+                throw new InvalidDataException("Invalid room index!");
+
+            Medic newMedic = new Medic(firstName, lastName, birthDate, phoneNumber, email, speciality, roomRepository.get(roomIndex));
+            medicRepository.add(newMedic);
+        }
     }
 
     public void deleteMedic(int index) throws InvalidDataException {
@@ -81,4 +85,30 @@ public class MedicServices {
             medicRepository.add(medic);
         }
     }
+
+    public ArrayList<Medic> getMedicsFromDB(ConnectionManager conn) {
+        MedicDBServices dbService = new MedicDBServices(conn);
+        ArrayList<Medic> dbMedics = dbService.getAllItems();
+        return dbMedics;
+    }
+
+    public void addMedicToDB(ConnectionManager conn, Medic medic) throws InvalidDataException {
+        MedicDBServices dbService = new MedicDBServices(conn);
+        if(isValidMedic(medic.getFirstName(), medic.getLastName(), medic.getBirthDate(),
+                medic.getPhoneNumber(), medic.getEmail(), medic.getSpeciality().toString()))
+            dbService.insertItem(medic);
+    }
+
+    public void updateMedicInDB(ConnectionManager conn, int id, Medic medic) throws InvalidDataException {
+        MedicDBServices dbService = new MedicDBServices(conn);
+        if(isValidMedic(medic.getFirstName(), medic.getLastName(), medic.getBirthDate(),
+                medic.getPhoneNumber(), medic.getEmail(), medic.getSpeciality().toString()))
+            dbService.updateItem(id, medic);
+    }
+
+    public void deleteMedicFromDB(ConnectionManager conn, int id)  {
+        MedicDBServices dbService = new MedicDBServices(conn);
+        dbService.deleteItem(id);
+    }
+
 }

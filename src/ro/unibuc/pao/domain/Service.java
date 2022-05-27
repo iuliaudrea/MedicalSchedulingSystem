@@ -8,12 +8,18 @@ public class Service {
     private int duration;
     private Speciality speciality;
 
+    private int id;
+    private static int _id = 10;
+
     public Service(String name, double price, int duration, Speciality speciality) {
         this.name = name;
         this.price = price;
         this.duration = duration;
         this.speciality = speciality;
+        this.id = ++_id;
     }
+
+    public Service() {}
 
     public Service(Service service) {
         if(service != null) {
@@ -21,17 +27,26 @@ public class Service {
             this.price = service.price;
             this.duration = service.duration;
             this.speciality = service.speciality;
+            this.id = service.id;
         }
     }
 
     @Override
     public String toString() {
-        return "Service{" +
-                "name=" + name +
+        return "Service{id=" + id +
+                ", name=" + name +
                 ", price=" + price +
                 ", duration=" + duration +
                 ", speciality=" + speciality +
                 '}';
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override

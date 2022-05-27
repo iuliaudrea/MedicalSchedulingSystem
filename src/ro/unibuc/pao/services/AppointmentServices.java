@@ -5,7 +5,10 @@ import ro.unibuc.pao.domain.*;
 import ro.unibuc.pao.persistence.*;
 import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.services.csv.AppointmentCSVServices;
+import ro.unibuc.pao.services.database.AppointmentDBServices;
+import ro.unibuc.pao.services.database.ConnectionManager;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class AppointmentServices {
@@ -14,7 +17,6 @@ public class AppointmentServices {
     private ClientRepository clientRepo = new ClientRepository();
     private ServiceRepository serviceRepo = new ServiceRepository();
     private MedicRepository medicRepo = new MedicRepository();
-
 
     public void addAppointment(Appointment appointment) throws InvalidDataException{
         if(appointment == null)
@@ -170,11 +172,6 @@ public class AppointmentServices {
         return false;
     }
 
-    public Room getAppRoom(int index) { //cabinetul in care are loc programarea
-//        if(index < 0 || index >= appointmentRepository.getSize()) //TODO
-        return appointmentRepository.get(index).getMedic().getCabinet();
-    }
-
     // verificarea faptului ca o programare nu se suprapune cu programarile deja existente la acelasi medic
     private boolean isOverlapping(Appointment appointment) {
         if(appointment == null) return true; // de tratat exceptii
@@ -233,5 +230,29 @@ public class AppointmentServices {
             appointmentRepository.add(app);
         }
     }
+
+    public ArrayList<Appointment> getAppointmentsFromDB(ConnectionManager conn) {
+        AppointmentDBServices dbService = new AppointmentDBServices(conn);
+        ArrayList<Appointment> dbAppointments = dbService.getAllItems();
+        return dbAppointments;
+    }
+
+    public void addAppointmentToDB(ConnectionManager conn, int clientId,
+       int medicID, int serviceID, DateTime app_date) throws InvalidDataException {
+        AppointmentDBServices dbService = new AppointmentDBServices(conn);
+        dbService.insertItem(clientId, medicID, serviceID, app_date.toString());
+    }
+
+    public void updateAppointmentInDB(ConnectionManager conn, int id,
+      int clientId,int medicID, int serviceID, DateTime app_date) throws InvalidDataException {
+        AppointmentDBServices dbService = new AppointmentDBServices(conn);
+        dbService.updateItem(id, clientId, medicID, serviceID, app_date);
+    }
+
+    public void deleteAppointmentFromDB(ConnectionManager conn, int id)  {
+        AppointmentDBServices dbService = new AppointmentDBServices(conn);
+        dbService.deleteItem(id);
+    }
+
 
 }

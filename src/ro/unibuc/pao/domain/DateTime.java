@@ -28,8 +28,8 @@ public class DateTime extends Date{
     @Override
     public String toString() {
         if(minutes < 10)
-            return super.toString() + ", time=" + hour + ":0" + minutes;
-        return super.toString() + ", time=" + hour + ":" + minutes;
+            return super.toString() + " " + hour + ":0" + minutes;
+        return super.toString() + " " + hour + ":" + minutes;
     }
 
     @Override

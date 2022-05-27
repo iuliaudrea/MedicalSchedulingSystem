@@ -3,12 +3,20 @@ package ro.unibuc.pao.domain;
 import java.util.Objects;
 
 public class Client extends Person{
+
+    public int id;
+    public static int _id = 101;
+
     public Client(String firstName, String lastName, Date birthDate, String phoneNumber, String email) {
         super(firstName, lastName, birthDate, phoneNumber, email);
+        this.id = ++_id;
     }
+
+    public Client() {}
 
     public Client(Client client) {
         if(client != null) {
+            this.id = client.id;
             this.firstName = client.firstName;
             this.lastName = client.lastName;
             this.birthDate = client.birthDate;
@@ -19,7 +27,7 @@ public class Client extends Person{
 
     @Override
     public String toString() {
-        return "Client{" + super.toString() + '}';
+        return "Client{id=" + id +", " + super.toString() + '}';
     }
 
     @Override
@@ -40,4 +48,11 @@ public class Client extends Person{
         return Objects.hash(super.hashCode(), firstName, lastName, birthDate, phoneNumber, email);
     }
 
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

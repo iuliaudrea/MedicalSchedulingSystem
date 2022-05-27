@@ -6,10 +6,32 @@ public class Medic extends Person {
     private Speciality speciality;
     private Room cabinet; // cabinetul in care lucreaza medicul
 
+    public int id;
+    public static int _id = 1;
+
     public Medic(String firstName, String lastName, Date birthDate, String phoneNumber, String email, Speciality speciality, Room cabinet) {
         super(firstName, lastName, birthDate, phoneNumber, email);
         this.speciality = speciality;
         this.cabinet = cabinet;
+        this.id = ++_id;
+    }
+
+    public Medic() {}
+
+    public Medic(String firstName, String lastName, Date birthDate, String phoneNumber, String email, Speciality speciality, int cabinetNumber) {
+        super(firstName, lastName, birthDate, phoneNumber, email);
+        this.speciality = speciality;
+        this.id = ++_id;
+        this.cabinet = new Room();
+        this.cabinet.setNumber(cabinetNumber);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     //generate constructor with Medic object
@@ -21,6 +43,7 @@ public class Medic extends Person {
         this.email = medic.email;
         this.speciality = medic.speciality;
         this.cabinet = medic.cabinet;
+        this.id = medic.id;
     }
 
     @Override
@@ -39,7 +62,7 @@ public class Medic extends Person {
 
     @Override
     public String toString() {
-        return "Medic{" + super.toString() +
+        return "Medic{id=" + id + ", " + super.toString() +
                 ", speciality=" + speciality +
                 ", cabinet=Room#" + cabinet.getNumber() +
                 '}';

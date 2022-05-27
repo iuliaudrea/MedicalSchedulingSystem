@@ -8,13 +8,23 @@ public class Appointment {
     private Service service;
     private DateTime dateTime;
 
+    private int id;
+    private static int _id = 10;
+
     public Appointment(Client client, Medic medic, Service service, DateTime dateTime) {
         //daca sterg o programare, nu se vor sterge clientul, medicul, seriviciul sau data => agregare
         this.client = client;
         this.medic = medic;
         this.service = service;
         this.dateTime = dateTime;
+        this.id = ++_id;
     }
+
+    public Appointment(){}
+
+//    public Appointment(int clientId, int medicId, int serviceId, DateTime dateTime) {
+//
+//    }
 
     public Appointment(Appointment appointment) {
         if(appointment != null) {
@@ -22,7 +32,16 @@ public class Appointment {
             this.medic = appointment.getMedic();
             this.service = appointment.getService();
             this.dateTime = appointment.getDateTime();
+            this.id = appointment.getId();
         }
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     @Override

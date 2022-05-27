@@ -6,7 +6,10 @@ import ro.unibuc.pao.domain.Service;
 import ro.unibuc.pao.exceptions.InvalidDataException;
 import ro.unibuc.pao.persistence.ClientRepository;
 import ro.unibuc.pao.services.csv.ClientCSVServices;
+import ro.unibuc.pao.services.database.ClientDBServices;
+import ro.unibuc.pao.services.database.ConnectionManager;
 
+import java.util.ArrayList;
 import java.util.Vector;
 
 public class ClientServices {
@@ -27,7 +30,8 @@ public class ClientServices {
         clientRepository.add(newClient);
     }
 
-    public void addNewClient(String firstName, String lastName, Date birthDate, String phoneNumber, String email) throws InvalidDataException {
+    private boolean isValidClient(String firstName, String lastName, Date birthDate, String phoneNumber, String email)
+    throws InvalidDataException {
         if(firstName == null || lastName == null || firstName.equals("") || lastName.equals(""))
             throw new InvalidDataException("Invalid name!");
 
@@ -37,8 +41,15 @@ public class ClientServices {
         if(!email.matches("[a-zA-Z0-9]+@[a-zA-Z0-9]+.[a-zA-Z]+"))
             throw new InvalidDataException("Email is not valid!");
 
-        Client newClient = new Client(firstName, lastName, birthDate, phoneNumber, email);
-        clientRepository.add(newClient);
+        return true;
+    }
+
+    public void addNewClient(String firstName, String lastName, Date birthDate, String phoneNumber, String email) throws InvalidDataException {
+
+        if(isValidClient(firstName, lastName, birthDate, phoneNumber, email)) {
+            Client newClient = new Client(firstName, lastName, birthDate, phoneNumber, email);
+            clientRepository.add(newClient);
+        }
     }
 
     public void updateClient(int index, Client client) throws InvalidDataException {
@@ -59,6 +70,31 @@ public class ClientServices {
         for(Client client : clients) {
             clientRepository.add(client);
         }
+    }
+
+    public ArrayList<Client> getClientsFromDB(ConnectionManager conn) {
+        ClientDBServices dbService = new ClientDBServices(conn);
+        ArrayList<Client> dbClients = dbService.getAllItems();
+        return dbClients;
+    }
+
+    public void addClientToDB(ConnectionManager conn, Client client) throws InvalidDataException {
+        ClientDBServices dbService = new ClientDBServices(conn);
+        if(isValidClient(client.getFirstName(), client.getLastName(), client.getBirthDate(),
+                client.getPhoneNumber(), client.getEmail()))
+            dbService.insertItem(client);
+    }
+
+    public void updateClientInDB(ConnectionManager conn, int id, Client client) throws InvalidDataException {
+        ClientDBServices dbService = new ClientDBServices(conn);
+        if(isValidClient(client.getFirstName(), client.getLastName(), client.getBirthDate(),
+                client.getPhoneNumber(), client.getEmail()))
+            dbService.updateItem(id, client);
+    }
+
+    public void deleteClientFromDB(ConnectionManager conn, int id)  {
+        ClientDBServices dbService = new ClientDBServices(conn);
+        dbService.deleteItem(id);
     }
 
 }

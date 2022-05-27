@@ -68,7 +68,7 @@ public class ConsoleApp {
         System.out.println("8. list all services");
         System.out.println("9. update appointment (change date/service/medic)");
         System.out.println("10. delete appointment");
-        System.out.println("13 - 16: Get/Add/Update/Delete from/to client database");
+        System.out.println("13 - 16: Add/Update/Delete/Get from/to client database");
         System.out.println("17 - 20: Add/Update/Delete/Get from/to medic database");
         System.out.println("21 - 24: Add/Update/Delete/Get from/to service database");
         System.out.println("25 - 28: Add/Update/Delete/Get from/to appointment database");
@@ -248,17 +248,6 @@ public class ConsoleApp {
                     System.out.println(invalidData.getMessage());
                 }
                 break;
-//            case 3:
-//                System.out.print("Please enter medic index:");
-//                int index3 = s.nextInt();
-//                s.nextLine();
-//                System.out.print("Please enter date:");
-//                int day = s.nextInt();
-//                int month = s.nextInt();
-//                int year = s.nextInt();
-//                Date date = new Date(day, month, year);
-//                s.nextLine();
-//                appService.getAppointmentsByMedicAndDate(index3, date);
             default:
                 break;
         }
